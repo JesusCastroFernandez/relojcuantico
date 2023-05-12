@@ -1,0 +1,43 @@
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import Aer, execute
+from datetime import datetime
+
+# Crear un registro cuántico de 5 qubits y un registro clásico de 5 bits
+qr = QuantumRegister(5)
+cr = ClassicalRegister(5)
+
+# Crear el circuito cuántico
+qc = QuantumCircuit(qr, cr)
+
+# Obtener la hora actual
+now = datetime.now()
+current_time = now.strftime("%H:%M:%S")
+print("Hora actual:", current_time)
+
+# Convertir la hora actual en binario
+binary_time = format(int(current_time.replace(":", "")), "020b")
+
+# Inicializar los qubits con la hora actual en binario
+for i in range(5):
+    if binary_time[i] == "1":
+        qc.x(qr[i])
+
+# Medir los qubits
+qc.measure(qr, cr)
+
+# Ejecutar el circuito en un simulador
+backend = Aer.get_backend('qasm_simulator')
+job_sim = execute(qc, backend)
+sim_result = job_sim.result()
+
+# Obtener el resultado de la medición y convertirlo en decimal
+time_decimal = int(list(sim_result.get_counts(qc).keys())[0], 2)
+
+# Convertir el tiempo decimal a formato de hora
+hours = str(time_decimal // 10000)
+minutes = str((time_decimal % 10000) // 100)
+seconds = str(time_decimal % 100)
+current_time = hours.zfill(2) + ":" + minutes.zfill(2) + ":" + seconds.zfill(2)
+
+# Mostrar la hora cuántica
+print("Hora cuántica:", current_time)
